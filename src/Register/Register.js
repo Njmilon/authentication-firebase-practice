@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { createUserWithEmailAndPassword, getAuth, updateProfile } from "firebase/auth";
 import app from '../firebase/firebase.init';
 import { EyeOff, Eye } from 'react-hero-icon/solid';
 import Icon from 'react-hero-icon';
@@ -87,10 +87,42 @@ const Register = () => {
     //   });
     // }
 
+//toogle show password in input form
     const [showPass, setShowPass] = useState(false);
-
-    const handleshowpassword = () =>{
+    const handleshowpassword = () => {
         setShowPass(!showPass);
+    }
+
+//create a new user into firebase
+    const auth = getAuth(app);
+    const handleRegister = (e) => {
+        e.preventDefault();
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Signed in 
+                const user = userCredential.user;
+                updateUserName();
+                console.log(user);
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                setError(errorMessage);
+            });
+    }
+
+
+    const updateUserName = () =>{
+        updateProfile(auth.currentUser, {
+            displayName: name
+          }).then(() => {
+            // Profile updated!
+            // ...
+          }).catch((error) => {
+            // An error occurred
+            // ...
+            setError(error)
+          });
     }
 
     return (
@@ -101,27 +133,27 @@ const Register = () => {
                     <div className="mt-4">
                         <p className='text-red-600 text-center'><small>{error}</small></p>
                         <div>
-                            <label for='userName' className="block" htmlFor="Name">Name</label>
+                            <label htmlFor='userName' className="block">Name</label>
                             <input onBlur={handleName} name='name' id='userName' type="text" placeholder="Name"
                                 className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600" />
                         </div>
                         <div className="mt-4">
-                            <label for='email' className="block" htmlFor="email">Email</label>
+                            <label htmlFor='email' className="block">Email</label>
                             <input onBlur={handleEmail} name='email' id='email' required type="email" placeholder="Email"
                                 className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600" />
                         </div>
                         <div className="mt-4">
-                            <label for='password' className="block">Password</label>
+                            <label htmlFor='password' className="block">Password</label>
                             <div className='relative'>
                                 <input onBlur={handlePassword} name='password' id='password' required type={showPass ? "text" : "password"} placeholder="Password"
                                     className="flex items-center w-full py-2 px-4 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600" />
-                                <label for='password' className='absolute top-2 right-2'>
-                                    <Icon onClick={handleshowpassword}  className="cursor-pointer" icon={showPass ? "EyeOff" : "eye"} />
+                                <label htmlFor='password' className='absolute top-2 right-2'>
+                                    <Icon onClick={handleshowpassword} className="cursor-pointer" icon={showPass ? "EyeOff" : "eye"} />
                                 </label>
                             </div>
                         </div>
                         {/* <span className="text-xs text-red-400">Password must be same!</span> */}
-                        <div className="flex">
+                        <div onClick={handleRegister}>
                             <button type='submit' className="w-full px-6 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-900">Create
                                 Account</button>
                         </div>
